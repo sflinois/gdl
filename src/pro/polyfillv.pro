@@ -49,13 +49,13 @@ FUNCTION polyfillv,x,y,sx,sy,runlength=run_length
   ;; initialize output array
   idx = -1L
 
-  fx = float(x)
-  fy = float(y)
+  fx = float(floor(x))
+  fy = float(floor(y))
 
   ;;  Loop through the rows of the image.
-  FOR py=0L,sy-1L DO BEGIN
+  FOR py=0L,sy-2L DO BEGIN
     
-     fpy = float(py)
+     fpy = float(py) + 0.5
      
      n = 0L
 
@@ -66,8 +66,10 @@ FUNCTION polyfillv,x,y,sx,sy,runlength=run_length
         IF ((fy[i] LE fpy) AND (fy[j] GT fpy)) OR $
            ((fy[j] LE fpy) AND (fy[i] GT fpy)) THEN BEGIN
            fpx = fx[i] + (fpy-fy[i])/(fy[j]-fy[i])*(fx[j]-fx[i])
-           px = fix(fpx)
-;;           print,i,px,py,x[i],y[i],x[j],y[j],fpx
+;           px = fix(fpx)
+;           px = round(fpx)
+           px = fpx
+;           print,i,j,px,py,x[i],y[i],x[j],y[j],fpx
            IF first THEN BEGIN
               nodex = px 
               first = 0B
@@ -92,6 +94,10 @@ FUNCTION polyfillv,x,y,sx,sy,runlength=run_length
            IF (nodex[i+1] GE 0) THEN BEGIN
               IF (nodex[i] LT 0) THEN nodex[i] = 0  ;; reset to left edge of raster
               IF (nodex[i+1] GT sx) THEN nodex[i+1] = sx  ;; reset to right edge of raster
+;; sflinois > in case of even node, 
+			IF nodex[i]-floor(nodex[i]) GE 0.5 THEN nodex[i] = floor(nodex[i]) ELSE nodex[i] = ceil(nodex[i])
+			nodex[i+1]=round(nodex[i+1])
+;;			print,nodex[i], nodex[i+1]
               numx=nodex[i+1] - nodex[i]
               IF numx GT 0L THEN BEGIN
                  valx=(lindgen(numx) + nodex[i]) + py * sx
